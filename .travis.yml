@@ -1,0 +1,13 @@
+language: go
+go:
+- 1.12.x
+sudo: required
+services:
+- docker
+script:
+- sudo apt update && sudo apt install libzmq3-dev
+- export GO111MODULE=on
+- make setup
+- make linter-install
+- make ci
+- make

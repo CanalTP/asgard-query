@@ -127,5 +127,5 @@ func main() {
 	rootCmd.PersistentFlags().DurationVarP(&timeout, "timeout", "d", 10*time.Second, "kraken timeout")
 	rootCmd.AddCommand(cmdDP)
 	rootCmd.AddCommand(cmdMatrix)
-	rootCmd.Execute()
+	_ = rootCmd.Execute()
 }
