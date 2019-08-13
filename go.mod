@@ -2,7 +2,7 @@ module asgard-query
 
 require (
 	github.com/CanalTP/gonavitia v0.0.0-20180817052458-0dcb887a472b
-	github.com/CanalTP/gormungandr/kraken v0.1.0
+	github.com/CanalTP/gormungandr/kraken v0.0.0-20190813064101-02acc13fa2c5
 	github.com/gchaincl/sqlhooks v1.1.0 // indirect
 	github.com/gin-gonic/gin v1.4.0 // indirect
 	github.com/golang/protobuf v1.3.2
@@ -14,5 +14,3 @@ require (
 	github.com/spf13/cobra v0.0.5
 	golang.org/x/tools/gopls v0.1.3 // indirect
 )
-
-replace github.com/CanalTP/gormungandr/kraken => ../../gormungandr/kraken
