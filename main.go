@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -14,10 +15,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func directPath(k kraken.Kraken, from, to string, quiet bool) {
+func directPath(k kraken.Kraken, coords []string, quiet bool) {
+	rand.Seed(time.Now().UnixNano())
+	choosenFrom := coords[rand.Intn(len(coords))]
+	choosenTo := coords[rand.Intn(len(coords))]
+	modes := []string{"walking", "car", "bike"}
+	choosenMode := modes[rand.Intn(len(modes))]
+
 	dp := kraken.DirectPathBuilder{
-		From:   from,
-		To:     to,
+		From:   choosenFrom,
+		To:     choosenTo,
+		Mode:   choosenMode,
 		Kraken: k,
 	}
 	r, err := dp.Get()
@@ -36,10 +44,16 @@ func directPath(k kraken.Kraken, from, to string, quiet bool) {
 	}
 }
 
-func matrix(k kraken.Kraken, from, to []string, maxDuration int32, quiet bool) {
+func matrix(k kraken.Kraken, coords []string, maxDuration int32, quiet bool) {
+	rand.Seed(time.Now().UnixNano())
+	choosenFrom := []string{coords[rand.Intn(len(coords))]}
+	modes := []string{"walking", "car", "bike"}
+	choosenMode := modes[rand.Intn(len(modes))]
+
 	matrix := kraken.StreetNetworkMatrixBuilder{
-		From:        from,
-		To:          to,
+		From:        choosenFrom,
+		To:          coords,
+		Mode:        choosenMode,
 		Kraken:      k,
 		MaxDuration: maxDuration,
 	}
@@ -98,50 +112,25 @@ func main() {
 	var bench time.Duration
 	var goroutines int
 	var maxDuration int32
+	var coordFile string
 
 	var cmdDP = &cobra.Command{
-		Use:   "directpath <from> <to>",
+		Use:   "directpath --coords <coordsFile>",
 		Short: "compute a direct path",
-		Long:  `compute a direct path from "from" to "to"`,
-		Args:  cobra.MinimumNArgs(2),
-		Run: func(cmd *cobra.Command, args []string) {
-			k := kraken.NewKrakenZMQ("test", target, timeout)
-			f := func() {
-				directPath(k, args[0], args[1], quiet)
-			}
-			if bench.Seconds() < 1 {
-				f()
-			} else {
-				benchmark(bench, goroutines, f)
-			}
-		},
-	}
-
-	var fromFile, toFile string
-	var cmdMatrix = &cobra.Command{
-		Use:   "matrix <coord> <coord> <coord> ...",
-		Short: "compute a direct path",
-		Long:  `compute a direct path from "from" to "to"`,
+		Long:  `compute a direct path from a random coord to an other random coord`,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			k := kraken.NewKrakenZMQ("test", target, timeout)
-			from := args
-			to := args
+			coords := args
 			var err error
-			if fromFile != "" {
-				from, err = LoadCoordFromFile(fromFile)
-				if err != nil {
-					logrus.Fatal(err)
-				}
-			}
-			if toFile != "" {
-				to, err = LoadCoordFromFile(toFile)
+			if coordFile != "" {
+				coords, err = LoadCoordFromFile(coordFile)
 				if err != nil {
 					logrus.Fatal(err)
 				}
 			}
 			f := func() {
-				matrix(k, from, to, maxDuration, quiet)
+				directPath(k, coords, quiet)
 			}
 			if bench.Seconds() < 1 {
 				f()
@@ -150,11 +139,36 @@ func main() {
 			}
 		},
 	}
-	cmdMatrix.Flags().StringVar(&fromFile, "from", "", "file to read from coordinates")
-	cmdMatrix.Flags().StringVar(&toFile, "to", "", "file to read to coordinates")
+
+	var cmdMatrix = &cobra.Command{
+		Use:   "matrix --coords <coordsFile> ...",
+		Short: "compute a matrix",
+		Long:  `compute a matrix from a random coord to all the others`,
+		Args:  cobra.MinimumNArgs(0),
+		Run: func(cmd *cobra.Command, args []string) {
+			k := kraken.NewKrakenZMQ("test", target, timeout)
+			coords := args
+			var err error
+			if coordFile != "" {
+				coords, err = LoadCoordFromFile(coordFile)
+				if err != nil {
+					logrus.Fatal(err)
+				}
+			}
+			f := func() {
+				matrix(k, coords, maxDuration, quiet)
+			}
+			if bench.Seconds() < 1 {
+				f()
+			} else {
+				benchmark(bench, goroutines, f)
+			}
+		},
+	}
 	cmdMatrix.Flags().Int32Var(&maxDuration, "max-duration", 30*60, "max duration to explore")
 
 	rootCmd := &cobra.Command{}
+	rootCmd.PersistentFlags().StringVar(&coordFile, "coords", "", "file to read coordinates")
 	rootCmd.PersistentFlags().StringVarP(&target, "target", "t", "tcp://127.0.0.1:6000", "kraken to target")
 	rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "remove normal output")
 	rootCmd.PersistentFlags().DurationVarP(&timeout, "timeout", "d", 10*time.Second, "kraken timeout")
