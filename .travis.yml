@@ -12,3 +12,11 @@ script:
 - make ci
 - make
 - ./build_static.sh
+deploy:
+  provider: releases
+  api_key:
+    secure: W2HslI6e4fh6nO8q3cTUV1GnyY/2xFY6GoZN20p4+oMgsmXxmsSpzUXpTVVNnh1qdii6HPxQ7LVwCXw9Z/HaQPKLUtmstu0gpRs6rT3Lpu/ULOnZMnZB0Dw9HissMPH/xJmsZdBybmf3ogDY8TGFb8BD4YhvEEkBrCiy4mHjg25W8nSKzpqjR40hGq22GOl9NyUuCMKLUOjkk7W2bT7a33XsNf6FfOs8zHeBOtEfTQPinRBZoxPc7NHLwPa7IB/yR2In0UkWFNNYzA5Xlv6ZToXz/Fjs4+PRLbUkRseeV80chRXDFEt/BY6bGs83ta4OD/2IYMb/JEYml348AgCTfXIlLjYuNImGupy49/DMmoalXIeH7Gklf3VtwXr6+60/NM5lrb+WeBURFHhQUwMkqB3cxYqzY5ChEGpEfLiuqGew+mVGYNx3+qGu1lCojyPI3DcRnf2SZUcuNZgVzI9R832OGjujvZ1DSPs4dXD7n5g/IzjPEWgh7gZMj2llSCSHpAnaxiHI9EDGUMe/tBBBdIeak8Q/4GOVx6VFnHCV1APRxBhc8Kb3Qtu+k/yBBEmR2SWul2z2qqplma7+ww/SLLSGccgMjVqRf+rqDzH1fMyzWlyBsJm5fxYO9XMO8e/kkTUntLLLFXiefEdpaQn0iCm9g9+5WETAks+phh1rZTU=
+  file: asgard-query
+  skip_cleanup: true
+  on:
+    tags: true
